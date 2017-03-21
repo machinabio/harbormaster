@@ -2,6 +2,7 @@ import { Template } from 'meteor/templating';
 import { Lanes } from '../../../../api/lanes/lanes.js';
 import { Session } from 'meteor/session';
 import { Users } from '../../../../api/users/users.js';
+import { Harbors } from '../../../../api/harbors';
 import { moment } from 'meteor/momentjs:moment';
 
 let AMOUNT_SHOWN = 20;
@@ -18,7 +19,7 @@ Template.edit_lane.helpers({
 
     Session.set('lane', lane);
 
-    return current_name == 'New' ? '' : lane.name;
+    return lane.name == 'New' ? '' : lane.name;
   },
 
   lane (sort_order) {
@@ -48,33 +49,12 @@ Template.edit_lane.helpers({
     return false;
   },
 
-  validate_shippable () {
-    var lane = Session.get('lane');
-    var saved_lane = Lanes.findOne(lane._id);
-
-    if (! saved_lane) {
-      return true;
-    }
-
+  has_followup () {
     return false;
   },
 
-  validate_prior_destination () {
-    var lane = Session.get('lane');
-
-    if (
-      ! lane.destinations ||
-      ! lane.destinations.length ||
-      ! lane.destinations[lane.destinations.length - 1].complete
-    ) {
-      return true;
-    }
-
+  has_salvage_plan () {
     return false;
-  },
-
-  check_salvage_plan () {
-    return 'disabled';
   },
 
   captain_list () {
@@ -129,108 +109,6 @@ Template.edit_lane.helpers({
     return false;
   },
 
-  destinations () {
-    var lane = Session.get('lane');
-    var destinations = lane.destinations || [];
-
-    if (! destinations.length) {
-      destinations.push({ name: "(New)" });
-    }
-
-    return destinations;
-  },
-
-  destination_name_value () {
-    if (this.name != "(New)") {
-      return this.name;
-    }
-
-    return '';
-  },
-
-  has_no_address () {
-    var lane = Session.get('lane');
-    var destination = _.where(lane.destinations, {
-      name: this.name
-    })[0];
-
-    if (
-      ! destination ||
-      ! destination.addresses ||
-      ! destination.addresses.length
-    ) {
-      return true;
-    }
-
-    return _.any(destination.addresses, function (address) {
-      return address == "";
-    });
-
-  },
-
-  has_no_name () {
-    var lane = Session.get('lane');
-    var destination = _.find(lane.destinations, function (target) {
-      return target.name;
-    });
-
-    if (! destination) { return true; }
-
-    return false;
-
-  },
-
-  addresses () {
-    var addresses = this.addresses || [''];
-
-    return addresses;
-  },
-
-  has_incomplete_stops () {
-    if (
-      ! this.stops ||
-      ! this.stops.length ||
-      this.stops[this.stops.length - 1].name == '' ||
-      this.stops[this.stops.length - 1].command == ''
-    ) {
-      return true;
-    }
-
-    return false;
-  },
-
-  stops () {
-    var stops = this.stops || [{
-      name: '',
-      command: ''
-    }];
-
-    return stops;
-  },
-
-  pretty_index (index) {
-    return index + 1;
-  },
-
-  has_no_name_or_address (target) {
-    var lane = Session.get('lane');
-    var destination = _.where(lane.destinations, {
-      name: target.name
-    })[0];
-
-    if (
-      ! destination ||
-      ! destination.name ||
-      ! destination.addresses ||
-      ! destination.addresses.length ||
-      destination.addresses[0] == ''
-    ) {
-      return true;
-    }
-
-    return false;
-  },
-
   pretty_date (date) {
     return new Date(date).toLocaleString();
   },
@@ -239,40 +117,34 @@ Template.edit_lane.helpers({
     return moment.duration(this.finished - this.actual).humanize();
   },
 
-  destination_user_value () {
-    if (this.user) {
-      return this.user;
+  harbors () {
+    let harbors = Harbors.find().fetch();
+
+    return harbors;
+  },
+
+  choose_type () {
+    return Session.get('choose_type');
+  },
+
+  current_lane () {
+    return Session.get('lane');
+  },
+
+  lane_type () {
+    return Session.get('lane').type;
+  },
+
+  render_harbor () {
+    let lane = Session.get('lane');
+    let harbor = Harbors.findOne(lane.type);
+
+    if (harbor.lanes[lane._id] && harbor.lanes[lane._id].rendered_html) {
+      return harbor.lanes[lane._id].rendered_html;
     }
 
-    return '';
-  },
-
-  destination_use_private_key () {
-    if (this.use_private_key) { return this.use_private_key; }
-
-    return false;
-  },
-
-  destination_private_key_location () {
-    if (this.private_key_location) { return this.private_key_location; }
-
-    return '';
-  },
-
-  has_private_key_location () {
-    if (this.use_private_key) {
-      return false;
-    }
-
-    return true;
-  },
-
-  destination_password_value () {
-    if (this.password) {
-      return this.password;
-    }
-
-    return '';
+    return harbor.rendered_html;
   }
+
 });
 

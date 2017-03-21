@@ -1,12 +1,15 @@
 import { Meteor } from 'meteor/meteor';
-import { Captains } from '../imports/api/captains/captains.js';
-import { Harbormasters } from '../imports/api/harbormasters/harbormasters.js';
-import { Lanes } from '../imports/api/lanes/lanes.js';
-import { SalvagePlans } from '../imports/api/lanes/salvage_plans/salvage_plans.js';
-import { Shipments } from '../imports/api/shipments/shipments.js';
-import { Stops } from '../imports/api/stops/stops.js';
-import { Users } from '../imports/api/users/users.js';
-import '../imports/startup/config/login.js';
-import '../imports/startup/client/global_helpers.js';
-import '../imports/startup/client/routes.js';
-import '../imports/startup/client/spinner.js';
+
+import '../imports/startup/config/namespace';
+import '../imports/startup/config/login';
+import '../imports/startup/client/global_helpers';
+import '../imports/startup/client/routes';
+import '../imports/startup/client/spinner';
+
+import { Captains } from '../imports/api/captains/captains';
+import { Harbormasters } from '../imports/api/harbormasters/harbormasters';
+import { Lanes } from '../imports/api/lanes/lanes';
+import { SalvagePlans } from '../imports/api/lanes/salvage_plans/salvage_plans';
+import { Shipments } from '../imports/api/shipments/shipments';
+import { Stops } from '../imports/api/stops/stops';
+import { Users } from '../imports/api/users/users';

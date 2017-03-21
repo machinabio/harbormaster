@@ -3,10 +3,12 @@ import { Users } from '../../../api/users/users';
 
 let users_subscription;
 let lanes_subscription;
+let harbors_subscription;
 
 Template.main.onCreated(function () {
   users_subscription = Meteor.subscribe('Users');
   lanes_subscription = Meteor.subscribe('Lanes');
+  harbors_subscription = Meteor.subscribe('Harbors');
 });
 
 Template.main.helpers({
