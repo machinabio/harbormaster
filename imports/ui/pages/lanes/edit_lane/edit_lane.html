@@ -33,26 +33,34 @@
             <button id=button-choose-{{_id}} class="button choose-harbor-type" data-type={{_id}}>{{_id}}</button>
             {{/each}}
           {{else}}
-          <button class="button add-harbor"><h3>Add some Work for this Harbor <span>+</span></h3></button>
+            <button class="button add-harbor"><h3>Add some Work for this Harbor <span>+</span></h3></button>
           {{/if}}
         {{/unless}}
         {{#if current_lane.type}}
           <legend>Work: {{lane_type}}</legend>
-          {{{render_harbor}}}
+          <section>
+            {{{render_harbor}}}
+          </section>
         {{/if}}
       </fieldset>
-      {{#unless validate_done}}
-        {{#unless has_followup}}
-          <button class="button tiny add-followup">Add Followup Destination</button>
-        {{else}}
-
-        {{/unless}}
-        {{#unless has_salvage_plan}}
-          <button class="button tiny warning add-salvage-plan">Add a Salvage Plan</button>
-        {{else}}
-
-        {{/unless}}
+      {{#unless no_followup}}
+        <button class="button tiny add-followup">Add Followup Destination</button>
       {{/unless}}
+      {{#unless no_salvage}}
+        <button class="button tiny warning add-salvage-plan">Add a Salvage Plan</button>
+      {{/unless}}
+
+      {{#if choose_followup}}
+      <fieldset class="fieldset followup">
+        <legend>Followup: {{followup_lane}}</legend>
+        {{#each lanes}}
+          <label>
+            <input checked={{chosen_lane}} type=radio name="lanes" value={{_id}}>
+            {{name}}
+          </label>
+        {{/each}}
+      </fieldset>
+      {{/if}}
     </form>
   {{/if}}
   <h2>Shipping Log: Last {{shipping_log_amount_shown}} shipments</h2>

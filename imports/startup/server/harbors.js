@@ -34,7 +34,7 @@ fs.readdirSync(harbors_dir).forEach(function (file) {
 
     let harbor = Harbors.findOne(harbor_name);
 
-    harbor.rendered_html = $H.harbors[harbor_name].render();
+    harbor.rendered_input = $H.harbors[harbor_name].render_input();
 
     Harbors.update({ _id: harbor._id }, harbor);
 

@@ -23,7 +23,7 @@ Meteor.methods({
     return Lanes.update(lane_id, lane);
   },
 
-  'Lanes#start_shipment': function (id, manifest) {
+  'Lanes#start_shipment': function (id, manifest, shipment_start_date) {
     if (
       typeof id != 'string' ||
       (manifest && typeof manifest != 'object')
@@ -37,14 +37,6 @@ Meteor.methods({
     }
 
     let lane = Lanes.findOne(id);
-    let date = new Date();
-    let shipment_start_date = date.getFullYear() + '-' +
-      date.getMonth() + '-' +
-      date.getDate() + '-' +
-      date.getHours() + '-' +
-      date.getMinutes() + '-' +
-      date.getSeconds()
-    ;
     let new_manifest;
 
     manifest.shipment_start_date = shipment_start_date;
@@ -54,27 +46,20 @@ Meteor.methods({
     lane.date_history[shipment_start_date] = {
       actual: new Date()
     };
-    Lanes.update(lane_id, lane);
+    Lanes.update(lane._id, lane);
 
-    console.log('Starting shipment for lane:', name);
+    console.log('Starting shipment for lane:', lane.name);
     try {
-      new_manifest = $H.harbors[lane.harbor].work(lane, manifest);
+      new_manifest = $H.harbors[lane.type].work(lane, manifest);
     } catch (err) {
+      console.error(err);
       manifest.error = err;
       new_manifest = manifest;
     }
 
     if (manifest.error && lane.salvage_plan) {
       let exit_code = 1;
-      Meteor.call('Lanes#end_shipment', lane, exit_code, new_manifest);
-      return Meteor.call(
-        'Lanes#start_shipment', lane.salvage_plan, new_manifest
-      );
-    }
-
-    if (lane.queue) {
-      console.log('Shipment started for lane', name + ':', started);
-      return lane;
+      return Meteor.call('Lanes#end_shipment', lane, exit_code, new_manifest);
     }
 
     return new_manifest;
@@ -82,8 +67,8 @@ Meteor.methods({
 
   'Lanes#end_shipment': function (lane, exit_code, manifest) {
     if (
-      typeof name != 'string' ||
-      (typeof exit_code != 'string' || typeof exit_code != 'number') ||
+      typeof lane._id != 'string' ||
+      (typeof exit_code != 'string' && typeof exit_code != 'number') ||
       (manifest && typeof manifest != 'object')
     ) {
       throw new TypeError(
@@ -103,8 +88,8 @@ Meteor.methods({
     lane.date_history[date].manifest = manifest;
     lane.shipment_active = false;
 
-    Lanes.update(lane_id, lane);
-    console.log('Shipping completed for lane:', name);
+    Lanes.update(lane._id, lane);
+    console.log('Shipping completed for lane:', lane.name);
 
     if (exit_code != 0 && lane.salvage_plan) {
       return Meteor.call('Lanes#start_shipment', lane.salvage_plan, manifest);
@@ -115,10 +100,9 @@ Meteor.methods({
     }
 
     return manifest;
-
   },
 
-  'Lanes#abort_shipment': function (name) {
+  'Lanes#reset_shipment': function (name) {
     let lane = Lanes.findOne({ name: name });
 
     lane.shipment_active = false;

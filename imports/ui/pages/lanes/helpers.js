@@ -159,13 +159,13 @@ Template.lanes.helpers({
   total_shipments () {
     if (! this.date_history) { return 0; }
 
-    return this.date_history.length;
+    return Object.keys(this.date_history).length;
   },
 
   salvage_plans () {
     if (! this.salvage_plans) { return 0; }
 
-    return this.salvage_plans.length;
+    return Object.keys(this.salvage_plans).length;
   },
 
   can_ply () {

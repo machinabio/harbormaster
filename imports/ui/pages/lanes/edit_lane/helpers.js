@@ -7,6 +7,15 @@ import { moment } from 'meteor/momentjs:moment';
 
 let AMOUNT_SHOWN = 20;
 
+Template.edit_lane.onCreated(function () {
+  if (! Session.get('lane')) {
+    let name = FlowRouter.getParam('name');
+    let lane = Lanes.findOne({ name: name });
+
+    return Session.set('lane', lane);
+  }
+})
+
 Template.edit_lane.helpers({
   lane_name (current_name) {
     var name = FlowRouter.getParam('name');
@@ -22,17 +31,32 @@ Template.edit_lane.helpers({
     return lane.name == 'New' ? '' : lane.name;
   },
 
+  followup_lane () {
+    let name = FlowRouter.getParam('name');
+    let lane = Lanes.findOne({ name: name });
+    let followup_lane = Lanes.findOne(lane.followup);
+
+    if (followup_lane) return followup_lane.name;
+
+    return '';
+  },
+
+  lanes () {
+    return Lanes.find()
+  },
+
   lane (sort_order) {
     var name = FlowRouter.getParam('name');
     var lane = Lanes.findOne({ name: name });
     var START_INDEX = 0;
     var END_INDEX = AMOUNT_SHOWN - 1;
 
-    if (sort_order == 'history' && lane) {
-      return lane.date_history ?
-        lane.date_history.reverse().slice(START_INDEX, END_INDEX) :
-        []
-      ;
+    if (sort_order == 'history' && lane && lane.date_history) {
+      let dates = Object.keys(lane.date_history);
+      let relevant_dates = dates.reverse().slice(START_INDEX, END_INDEX);
+      let logs = _.pick(lane.date_history, relevant_dates);
+
+      return _.values(logs);
     }
     return lane;
   },
@@ -49,12 +73,35 @@ Template.edit_lane.helpers({
     return false;
   },
 
-  has_followup () {
+  no_followup () {
+    let name = FlowRouter.getParam('name');
+    let lane = Lanes.findOne({ name: name });
+
+    if (
+      Lanes.find().fetch().length < 2 ||
+      (lane && lane.followup) ||
+      Session.get('choose_followup')
+    ) return true;
+
     return false;
   },
 
-  has_salvage_plan () {
-    return false;
+  no_salvage () {
+    return true;
+  },
+
+  choose_followup () {
+    let lane = Lanes.findOne({ name: FlowRouter.getParam('name') });
+
+    if (! lane) return false;
+
+    return Session.get('choose_followup') || lane.followup;
+  },
+
+  chosen_lane () {
+    let lane = Lanes.findOne({ name: FlowRouter.getParam('name') });
+
+    return this._id == lane.followup;
   },
 
   captain_list () {
@@ -64,7 +111,7 @@ Template.edit_lane.helpers({
   },
 
   can_ply () {
-    var lane = Session.get('lane');
+    var lane = Session.get('lane') || {};
 
     if (this.harbormaster) { return true; }
 
@@ -128,22 +175,42 @@ Template.edit_lane.helpers({
   },
 
   current_lane () {
-    return Session.get('lane');
+    let name = FlowRouter.getParam('name');
+    let lane = Session.get('lane') || Lanes.findOne({ name: name });
+
+    return lane;
   },
 
   lane_type () {
-    return Session.get('lane').type;
+    let name = FlowRouter.getParam('name');
+    let lane = Session.get('lane') || Lanes.findOne({ name: name });
+
+    return lane.type;
   },
 
   render_harbor () {
-    let lane = Session.get('lane');
-    let harbor = Harbors.findOne(lane.type);
+    let name = FlowRouter.getParam('name');
+    let lane = Session.get('lane') || Lanes.findOne({ name: name });
 
-    if (harbor.lanes[lane._id] && harbor.lanes[lane._id].rendered_html) {
-      return harbor.lanes[lane._id].rendered_html;
+    let harbor = Harbors.findOne(lane.type);
+    let manifest = harbor.lanes[lane._id] ?
+      harbor.lanes[lane._id].manifest :
+      false
+    ;
+
+    if (manifest) {
+      Meteor.call(
+        'Harbors#render_input',
+        lane,
+        manifest,
+        function (err, lane) {
+          if (err) throw err;
+
+          Session.set('lane', lane);
+      });
     }
 
-    return harbor.rendered_html;
+    return lane.rendered_input;
   }
 
 });

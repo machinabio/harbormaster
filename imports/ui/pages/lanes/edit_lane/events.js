@@ -31,7 +31,7 @@ Template.edit_lane.events({
     return update_harbor(template);
   },
 
-  'change form': function change_form (event, template) {
+  'change .harbor': function change_form (event, template) {
     let lane = Session.get('lane');
     let saved_lane = Lanes.findOne(lane._id);
 
@@ -43,6 +43,17 @@ Template.edit_lane.events({
 
       return update_harbor(template);
     }
+  },
+
+  'change .followup': function change_followup_lane (event) {
+    let lane = Session.get('lane');
+    let followup_lane = Lanes.findOne(event.target.value);
+
+    if (! lane || ! followup_lane) debugger;
+
+    lane.followup = followup_lane._id;
+    Lanes.update(lane._id, lane);
+    Session.set('lane', lane);
   },
 
   'change .lane-name': function change_lane_name (event) {
@@ -84,7 +95,7 @@ Template.edit_lane.events({
     return FlowRouter.go('/lanes');
   },
 
-  'click .choose-harbor-type': function choose_harbor_type (event) {
+  'click .choose-harbor-type': function choose_harbor_type (event, template) {
     event.preventDefault();
 
     let type = $(event.target).attr('data-type');
@@ -92,6 +103,18 @@ Template.edit_lane.events({
 
     lane.type = type;
     Session.set('lane', lane);
-    return Lanes.upsert({ _id: lane._id }, lane);
+    return Lanes.upsert({ _id: lane._id }, lane, function (err, count) {
+      if (err || count < 1) throw (err || new Error('No Lanes modified!'));
+
+      return update_harbor(template);
+    });
+  },
+
+  'click .add-followup': function add_followup_lane (event) {
+    return Session.set('choose_followup', true);
+  },
+
+  'click .add-salvage-plan': function add_salvage_plan (event) {
+    debugger;
   }
 });

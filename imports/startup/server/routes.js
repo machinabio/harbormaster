@@ -8,14 +8,20 @@ let post_hooks = Picker.filter(function (req) {
   return req.method == 'POST';
 });
 
-get_hooks.route('/lanes/:name/ship', function (params, req, res) {
+get_hooks.route('/lanes/:name/ship', function (params, req, res, next) {
 
   let lane_name = decodeURI(params.name);
   let token = req.headers.token;
   let user_id = req.headers.user_id;
   let lane = Lanes.findOne({ name: lane_name });
 
-  if (lane.shipment_active) {
+  if (
+    lane.shipment_active &&
+    token &&
+    user_id &&
+    lane.tokens &&
+    lane.tokens[token] == user_id
+  ) {
     res.statusCode = 303;
     return res.end(
       req.headers.host +
@@ -25,6 +31,8 @@ get_hooks.route('/lanes/:name/ship', function (params, req, res) {
         lane.latest_shipment
     );
   } else if (
+    token &&
+    user_id &&
     lane.tokens &&
     lane.tokens[token] == user_id &&
     ! lane.shipment_active
@@ -33,11 +41,10 @@ get_hooks.route('/lanes/:name/ship', function (params, req, res) {
     //TODO: Add response for error on last run
   }
 
-  res.statusCode = 401;
-  return res.end();
+  return next();
 });
 
-post_hooks.route('/lanes/:name/ship/:date/abort', function (params, req, res) {
+post_hooks.route('/lanes/:name/ship/:date/reset', function (params, req, res) {
 
   let lane_name = decodeURI(params.name);
   let token = req.headers.token;
@@ -50,10 +57,10 @@ post_hooks.route('/lanes/:name/ship/:date/abort', function (params, req, res) {
     lane.shipment_active
   ) {
 
-    let aborted_shipment = Meteor.call('Lanes#abort_shipment', lane_name);
+    let reset_shipment = Meteor.call('Lanes#reset_shipment', lane_name);
 
     res.statusCode = 200;
-    return res.end(aborted_shipment);
+    return res.end(reset_shipment);
 
   }
 
