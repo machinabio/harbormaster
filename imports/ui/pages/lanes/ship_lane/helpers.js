@@ -2,7 +2,9 @@ import { Template } from 'meteor/templating';
 import { Lanes } from '../../../../api/lanes/lanes.js';
 import { Session } from 'meteor/session';
 import { Harbors } from '../../../../api/harbors';
+import { moment } from 'meteor/momentjs:moment';
 
+//TODO: expose this
 let AMOUNT_SHOWN = 20;
 
 Template.ship_lane.helpers({
@@ -138,6 +140,10 @@ Template.ship_lane.helpers({
     }
 
     return lane.rendered_work_preview;
+  },
+
+  duration () {
+    return moment.duration(this.finished - this.actual).humanize();
   },
 
   followup_name (lane) {

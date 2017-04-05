@@ -11,6 +11,7 @@
         <th class="last-salvaged-header {{active 'salvaged'}}" data-value=salvaged>Last Salvaged</th>
         <th class="total-shipments-header {{active 'shipments'}}" data-value=shipments>Total Shipments</th>
         <th class="total-salvage-runs-header {{active 'salvage-runs'}}" data-value=salvage-runs>Total Salvage Runs</th>
+        <th class="current-state-header {{active 'current-state'}}" data-value=current-state>Current State</th>
       </tr>
     </thead>
     <tbody>
@@ -19,8 +20,8 @@
           <td>
             {{#if can_ply}}
               <div class="admin">
-                <a href="/lanes/{{name}}/ship" class="button hollow tiny success ship-lane">Ship</a>
-                <a href="/lanes/{{name}}/edit" class="button hollow tiny secondary edit-lane">Edit</a>
+                <a href="/lanes/{{name}}/ship" target=_blank class="button hollow tiny success ship-lane">Ship</a>
+                <a href="/lanes/{{name}}/edit" target=_blank class="button hollow tiny secondary edit-lane">Edit</a>
                 <button class="button hollow tiny warning delete-lane">Delete</button>
               </div>
             {{/if}}
@@ -32,6 +33,7 @@
           <td>{{last_salvage_run}}</td>
           <td>{{total_shipments}}</td>
           <td>{{salvage_plans}}</td>
+          <td class="{{current_state}}">{{current_state}}</td>
         </tr>
       {{/each}}
     </tbody>

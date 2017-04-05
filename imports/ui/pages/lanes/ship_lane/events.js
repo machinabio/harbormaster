@@ -9,6 +9,7 @@ Template.ship_lane.events({
     let harbor = Harbors.findOne(lane.type);
     let manifest = harbor.lanes[lane._id].manifest;
     let date = new Date();
+    //TODO: share w/ server code
     let shipment_start_date = date.getFullYear() + '-' +
       date.getMonth() + '-' +
       date.getDate() + '-' +

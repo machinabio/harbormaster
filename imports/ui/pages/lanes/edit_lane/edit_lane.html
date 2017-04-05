@@ -73,13 +73,13 @@
     {{#each lane "history"}}
       {{#if this.salvaged}}
         <li>
-          <a href="/lanes/{{lane.name}}/ship/{{this.start_date}}" class="button tiny alert hollow">
+          <a href="/lanes/{{lane.name}}/ship/{{this.manifest.shipment_start_date}}" class="button tiny alert hollow">
             Salvaged on {{pretty_date this.finished}}, {{duration}} duration
           </a>
         </li>
       {{else}}
         <li>
-          <a href="/lanes/{{lane.name}}/ship/{{this.start_date}}" class="button tiny hollow">
+          <a href="/lanes/{{lane.name}}/ship/{{this.manifest.shipment_start_date}}" class="button tiny hollow">
             Shipped on {{pretty_date this.actual}}, finished on {{pretty_date this.finished}}, {{duration}} duration
           </a>
         </li>

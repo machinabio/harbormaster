@@ -26,13 +26,15 @@ Meteor.methods({
   'Lanes#start_shipment': function (id, manifest, shipment_start_date) {
     if (
       typeof id != 'string' ||
-      (manifest && typeof manifest != 'object')
+      (manifest && typeof manifest != 'object') ||
+      ! shipment_start_date
     ) {
       throw new TypeError(
         'Improper arguments for "Lanes#start_shipment" method!', '\n',
         'The first argument must be a String; the _id of the lane.', '\n',
         'The second argument, if present, must be an object;' +
-          'parameters to pass to the Harbor.'
+          'parameters to pass to the Harbor.\n' +
+        'The third argument must be the shipment start date.'
       );
     }
 
@@ -96,7 +98,22 @@ Meteor.methods({
     }
 
     if (exit_code == 0 && lane.followup) {
-      return Meteor.call('Lanes#start_shipment', lane.followup, manifest)
+      let next_date = lane.date_history[date].finished;
+      //TODO: share w/ client code
+      let next_shipment_start_date = next_date.getFullYear() + '-' +
+        next_date.getMonth() + '-' +
+        next_date.getDate() + '-' +
+        next_date.getHours() + '-' +
+        next_date.getMinutes() + '-' +
+        next_date.getSeconds()
+      ;
+
+      return Meteor.call(
+        'Lanes#start_shipment',
+        lane.followup,
+        manifest,
+        next_shipment_start_date
+      );
     }
 
     return manifest;

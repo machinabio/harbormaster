@@ -183,5 +183,23 @@ Template.lanes.helpers({
     }
 
     return false;
+  },
+
+  current_state () {
+    let shipment_active = this.shipment_active;
+    let latest_shipment = this.latest_shipment;
+    let latest_exit_code;
+
+    if (
+      this.date_history[latest_shipment] &&
+      typeof this.date_history[latest_shipment].exit_code == 'string' ||
+      typeof this.date_history[latest_shipment].exit_code == 'number'
+    ) {
+      latest_exit_code = this.date_history[latest_shipment].exit_code;
+    }
+
+    if (shipment_active) return 'active';
+    if (latest_exit_code == 0) return 'ready';
+    if (latest_exit_code) return 'error';
   }
 });

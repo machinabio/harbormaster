@@ -5,6 +5,7 @@ import { Users } from '../../../../api/users/users.js';
 import { Harbors } from '../../../../api/harbors';
 import { moment } from 'meteor/momentjs:moment';
 
+//TODO: expose this
 let AMOUNT_SHOWN = 20;
 
 Template.edit_lane.onCreated(function () {
